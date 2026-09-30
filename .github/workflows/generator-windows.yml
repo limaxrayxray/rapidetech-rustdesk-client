@@ -44,19 +44,19 @@ env:
 
   # This values are normally passed from the rdgen server via an encrypted zip
 
-  androidappid: "it.mynet.aiuto"
-  apiServer: "rustdesk.mynet.it:21114"
-  appname: "MyNet Assistenza Tecnica"
-  compname: "MyNet"
-  downloadLink: "https://aiuto.mynet.it/"
-  filename: "mynet-assistenza-tecnica"
-  key: "Qy3s10jVjXij5rmbRArE4bAyRCrlDAx8WX+UdIwMiCw="
-  server: "rustdesk.mynet.it"
-  urlLink: "https://aiuto.mynet.it/"
+  androidappid: "ca.rapidetech.support"
+  apiServer: "rust.rapidetech.ca:21114"
+  appname: "Support rapidetech"
+  compname: "Rapidetech"
+  downloadLink: "https://rapidetech.ca/"
+  filename: "rapidetech-support"
+  key: "S28NHUc9Cy4K9NUlfbxa2tvhlliHbO2YSRim3zLcyDU="
+  server: "rust.rapidetech.ca"
+  urlLink: "https://rapidetech.ca/"
 
   # Logo
-  iconlink_url: "https://raw.githubusercontent.com/mynetit/rustdesk-client-generator/master/img/logo.png"
-  logolink_url: "https://raw.githubusercontent.com/mynetit/rustdesk-client-generator/master/img/logo.png"
+  iconlink_url: "https://raw.githubusercontent.com/limaxrayxray/rapidetech-rustdesk-client/master/img/logo.png"
+  logolink_url: "https://raw.githubusercontent.com/limaxrayxray/rapidetech-rustdesk-client/master/img/logo.png"
   privacylink_url: "false"
 
   # Features
