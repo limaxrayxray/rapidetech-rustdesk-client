@@ -19,10 +19,27 @@ Le script ne remplace que ce qui dépend du serveur rdgen :
 | icône et logo servis par le serveur | `img/logo.png` de ce dépôt |
 | binaires renvoyés au serveur | release GitHub `<version>-<patch>` |
 
-Il ajoute aussi un contrôle qui fait échouer le build si le serveur et la clé
+Il fige aussi chaque action tierce (`uses: owner/repo@v3`) sur le SHA de son
+commit, avec l'étiquette en commentaire. Une étiquette peut être déplacée vers
+du code malveillant (`tj-actions/changed-files`, 2025), et ces workflows
+produisent un outil de prise de contrôle à distance installé chez des clients.
+Les SHA sont recalculés à chaque synchronisation : relire leurs changements
+dans le `git diff`.
+
+Il ajoute enfin un contrôle qui fait échouer le build si le serveur et la clé
 ne sont pas intégrés au client. Dans rdgen, l'étape qui les pose est en
 `continue-on-error` : un échec y passerait inaperçu et produirait un client
 réglé sur les serveurs publics de RustDesk.
+
+## Écarts volontaires avec rdgen
+
+- **removeNewVersionNotif** : le `sed` de rdgen supprime de
+  `let (request, url) =` au prochain `Ok(())` de `src/common.rs`. Sur
+  RustDesk 1.5.1, ce n'est plus la fin de `do_check_software_update`, mais
+  1 100 lignes plus bas, et le code ne compile plus. Le script le remplace par
+  un `return Ok(());` en tête de la fonction, avec `perl`. En 1.5.x, la
+  vérification de mise à jour est de toute façon désactivée pour les clients
+  personnalisés (`is_custom_client()`).
 
 ## Fichiers
 
