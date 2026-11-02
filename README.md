@@ -44,6 +44,12 @@ réglé sur les serveurs publics de RustDesk.
   (le paquet de la classe `R`), puis le remplace en même temps que
   `applicationId`. Le code Kotlin ne trouve plus `R` et l'APK ne compile pas.
   Le script ne change que `applicationId` (`ca.rapidetech.support`).
+- **`custom_.txt` du .deb** : RustDesk lit ce fichier (nom affiché,
+  permissions par défaut) dans le dossier de son exécutable,
+  `/usr/share/<appname>/`. rdgen le dépose dans `/usr/share/rustdesk/` et ne
+  le copie à côté de l'exécutable que pour rpm, AppImage et flatpak. Le
+  script l'ajoute au .deb après sa création (`dpkg-deb -R` / `-b`). Le
+  serveur et la clé, compilés dans le binaire, n'en dépendent pas.
 - **Linux unattended-wayland** (`libdrmtap`, ajouté par rdgen le
   2026-10-31) : son empaquetage échoue avec un nom d'application
   personnalisé. Le job est désactivé (`if: false`), sauf si

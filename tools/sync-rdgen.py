@@ -302,6 +302,27 @@ def transform(name, text, sha):
                           text)
         expect(n, "job build-rustdesk-linux-drm", name, exact=1)
 
+    # Linux .deb : RustDesk lit custom_.txt dans le dossier de son exécutable
+    # (load_custom_client, current_exe().parent()), soit /usr/share/<appname>/.
+    # rdgen le dépose dans /usr/share/rustdesk/, en dur, et ne le copie dans le
+    # bundle (rpm, AppImage, flatpak) qu'après la création du .deb. Sans cela,
+    # le .deb ignore le nom affiché et les permissions. On l'ajoute au .deb.
+    if name == "generator-linux.yml":
+        build = "            python3 ./build.py --flutter --skip-cargo\n"
+        expect(text.count(build), "appel build.py du .deb standard", name, exact=1)
+        text = text.replace(build, build + """\
+            # rapidetech : custom_.txt à côté de l'exécutable (voir tools/sync-rdgen.py)
+            for deb in *.deb; do
+              rm -rf /tmp/debfix && dpkg-deb -R "$deb" /tmp/debfix
+              cp ./custom_.txt "/tmp/debfix/usr/share/${{ env.appname }}/custom_.txt"
+              if [ -f /tmp/debfix/DEBIAN/md5sums ]; then
+                (cd /tmp/debfix && find usr -type f -exec md5sum {} + > DEBIAN/md5sums)
+              fi
+              dpkg-deb -b /tmp/debfix "$deb"
+              dpkg-deb -c "$deb" | grep -F "usr/share/${{ env.appname }}/custom_.txt"
+            done
+""")
+
     # zip_url facultatif, entrée patch pour le tag de release.
     text, n = re.subn(r"(\n      zip_url:\n        description: [^\n]*\n        required: )true",
                       r"\1false", text)

@@ -686,6 +686,16 @@ jobs:
             fi
 
             python3 ./build.py --flutter --skip-cargo
+            # rapidetech : custom_.txt à côté de l'exécutable (voir tools/sync-rdgen.py)
+            for deb in *.deb; do
+              rm -rf /tmp/debfix && dpkg-deb -R "$deb" /tmp/debfix
+              cp ./custom_.txt "/tmp/debfix/usr/share/${{ env.appname }}/custom_.txt"
+              if [ -f /tmp/debfix/DEBIAN/md5sums ]; then
+                (cd /tmp/debfix && find usr -type f -exec md5sum {} + > DEBIAN/md5sums)
+              fi
+              dpkg-deb -b /tmp/debfix "$deb"
+              dpkg-deb -c "$deb" | grep -F "usr/share/${{ env.appname }}/custom_.txt"
+            done
             for name in *.deb; do
               mv "$name" /workspace/output/"${{ env.filename }}-${{ matrix.job.arch }}.deb"
             done
