@@ -1,0 +1,43 @@
+# Propre à ce dépôt. Pousser un tag <version RustDesk>-<patch> (ex. 1.5.1-1)
+# crée la pré-release et lance les générateurs, qui y déposent leurs binaires.
+name: Release
+
+on:
+  push:
+    tags: ['[0-9]*.[0-9]*.[0-9]*-[0-9]*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'tag existant <version>-<patch>, ex. 1.5.1-1'
+        required: true
+        type: string
+      platforms:
+        description: 'générateurs à lancer'
+        required: false
+        default: 'windows macos android linux'
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ inputs.tag || github.ref_name }}
+      PLATFORMS: ${{ inputs.platforms || 'windows macos android linux' }}
+    steps:
+      - name: Create pre-release and dispatch generators
+        run: |
+          [[ "$TAG" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)$ ]] || { echo "::error::tag invalide : $TAG"; exit 1; }
+          version=${BASH_REMATCH[1]}; patch=${BASH_REMATCH[2]}
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --verify-tag --prerelease \
+            --title "Support rapidetech $TAG" \
+            --notes "Client RustDesk $version personnalisé pour rust.rapidetech.ca (build $patch)."
+          for p in $PLATFORMS; do
+            gh workflow run "generator-$p.yml" --ref "$TAG" -f version="$version" -f patch="$patch"
+            echo "generator-$p.yml lancé ($version, build $patch)"
+          done

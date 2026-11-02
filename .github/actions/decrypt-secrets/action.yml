@@ -1,0 +1,26 @@
+# Propre à ce dépôt : remplace l'action de rdgen, qui déchiffre le zip du
+# serveur rdgen. Ici, secrets.json est la configuration en clair publiée par
+# fetch-encrypted-secrets.yml.
+name: 'Load config'
+description: 'Exporte secrets.json (configuration du client) en variables d environnement'
+inputs:
+  zip_password:
+    description: 'Ignoré, gardé pour la compatibilité avec les workflows rdgen'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Load config
+      shell: python
+      env:
+        PYTHONUTF8: "1"
+      run: |
+        import json, os
+        with open('secrets.json', encoding='utf-8') as f:
+            config = json.load(f)
+        with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env_file:
+            for key, value in config.items():
+                if value:
+                    env_file.write(f"{key}={value}\n")
+        print(f"{len(config)} valeurs de configuration chargées.")
