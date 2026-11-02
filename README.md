@@ -40,6 +40,14 @@ réglé sur les serveurs publics de RustDesk.
   un `return Ok(());` en tête de la fonction, avec `perl`. En 1.5.x, la
   vérification de mise à jour est de toute façon désactivée pour les clients
   personnalisés (`is_custom_client()`).
+- **Identifiant Android** : rdgen pose `namespace "com.carriez.flutter_hbb"`
+  (le paquet de la classe `R`), puis le remplace en même temps que
+  `applicationId`. Le code Kotlin ne trouve plus `R` et l'APK ne compile pas.
+  Le script ne change que `applicationId` (`ca.rapidetech.support`).
+- **Linux unattended-wayland** (`libdrmtap`, ajouté par rdgen le
+  2026-10-31) : son empaquetage échoue avec un nom d'application
+  personnalisé. Le job est désactivé (`if: false`), sauf si
+  `linuxUnattendedWayland` vaut `true` dans `config/client.json`.
 
 ## Fichiers
 
