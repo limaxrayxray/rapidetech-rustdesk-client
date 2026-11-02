@@ -44,6 +44,7 @@ VERBATIM = ["bridge.yml", "third-party-RustDeskTempTopMostWindow.yml",
 # Fichiers propres à ce dépôt, que ce script ne touche pas.
 OWN = ["fetch-encrypted-secrets.yml", "release.yml"]
 
+CFG = {}  # config/client.json, chargée par main()
 STEP = "      - "  # indentation des étapes dans les jobs rdgen
 
 
@@ -281,6 +282,26 @@ def transform(name, text, sha):
     ), text.count("sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs")
     expect(n, "sed removeNewVersionNotif sur common.rs", name)
 
+    # Android : rdgen pose namespace "com.carriez.flutter_hbb" (le paquet de la
+    # classe R), puis son sed d'identifiant le remplace avec applicationId. Le
+    # code Kotlin, resté dans com.carriez.flutter_hbb, ne trouve plus R
+    # (échec des APK 1.5.1-3). Seul applicationId doit changer.
+    old_appid = "sed -i -e 's|com.carriez.flutter_hbb|${{ env.androidappid }}|' ./flutter/android/app/build.gradle"
+    if name == "generator-android.yml":
+        expect(text.count(old_appid), "sed androidappid sur build.gradle", name, exact=1)
+        text = text.replace(old_appid, "sed -i -e 's|applicationId \"com.carriez.flutter_hbb\"|applicationId \"${{ env.androidappid }}\"|' ./flutter/android/app/build.gradle")
+
+    # Linux : variante « unattended-wayland » (libdrmtap, ajoutée par rdgen le
+    # 2026-10-31). Son empaquetage cherche tmpdeb/usr/bin/<appname> et échoue
+    # avec un nom personnalisé. Aucun job n'en dépend : désactivée sauf si
+    # config/client.json demande linuxUnattendedWayland.
+    if name == "generator-linux.yml" and not CFG.get("linuxUnattendedWayland", False):
+        text, n = re.subn(r"\n  build-rustdesk-linux-drm:\n",
+                          "\n  build-rustdesk-linux-drm:\n"
+                          "    if: false  # désactivé par tools/sync-rdgen.py (linuxUnattendedWayland)\n",
+                          text)
+        expect(n, "job build-rustdesk-linux-drm", name, exact=1)
+
     # zip_url facultatif, entrée patch pour le tag de release.
     text, n = re.subn(r"(\n      zip_url:\n        description: [^\n]*\n        required: )true",
                       r"\1false", text)
@@ -374,7 +395,8 @@ def main():
     ap.add_argument("--ref", default="master", help="branche, tag ou sha de rdgen")
     args = ap.parse_args()
 
-    cfg = json.loads((ROOT / "config" / "client.json").read_text(encoding="utf-8"))
+    global CFG
+    cfg = CFG = json.loads((ROOT / "config" / "client.json").read_text(encoding="utf-8"))
     env = build_env(cfg)
     sha = resolve_ref(args.ref)
 
