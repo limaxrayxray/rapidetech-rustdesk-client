@@ -1,0 +1,48 @@
+{
+  "_comment": "Configuration du client « Support rapidetech ». Les noms de champs sont ceux du formulaire rdgen (rdgenerator/views.py). Après modification : tools/sync-rdgen.py, puis commit et tag.",
+
+  "appname": "Support rapidetech",
+  "exename": "rapidetech-support",
+  "compname": "Rapidetech",
+  "androidappid": "ca.rapidetech.support",
+
+  "serverIP": "rust.rapidetech.ca",
+  "serverPort": "21116",
+  "key": "S28NHUc9Cy4K9NUlfbxa2tvhlliHbO2YSRim3zLcyDU=",
+  "apiServer": "",
+
+  "urlLink": "https://rapidetech.ca/",
+  "downloadLink": "https://rapidetech.ca/",
+
+  "icon": "img/logo.png",
+  "logo": "img/logo.png",
+
+  "direction": "both",
+  "installation": "installationY",
+  "settings": "settingsY",
+  "passApproveMode": "password-click",
+  "permissionsDorO": "default",
+  "permissionsType": "custom",
+
+  "delayFix": true,
+  "xOffline": false,
+  "hidecm": false,
+  "removeNewVersionNotif": true,
+  "denyLan": false,
+  "enableDirectIP": false,
+  "autoClose": false,
+
+  "enableKeyboard": true,
+  "enableClipboard": true,
+  "enableFileTransfer": true,
+  "enableAudio": true,
+  "enableTCP": true,
+  "enableRemoteRestart": true,
+  "enableRecording": true,
+  "enableBlockingInput": true,
+  "enableRemoteModi": false,
+  "removeWallpaper": true,
+  "enablePrinter": true,
+  "enableCamera": true,
+  "enableTerminal": true
+}
