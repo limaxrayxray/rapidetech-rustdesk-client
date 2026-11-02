@@ -32,6 +32,9 @@
   "enableDirectIP": false,
   "autoClose": false,
 
+  "_linuxUnattendedWayland": "variante Linux unattended-wayland (libdrmtap) : son empaquetage rdgen échoue avec un nom personnalisé (2026-11-02)",
+  "linuxUnattendedWayland": false,
+
   "enableKeyboard": true,
   "enableClipboard": true,
   "enableFileTransfer": true,
