@@ -1,3 +1,5 @@
+# Copié tel quel par tools/sync-rdgen.py depuis bryangerlach/rdgen@ff644011c2b6.
+# Ne pas modifier à la main : modifier le script ou config/client.json.
 name: Clear cache
 
 on:

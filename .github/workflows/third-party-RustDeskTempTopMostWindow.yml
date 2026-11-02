@@ -1,8 +1,14 @@
+# Copié tel quel par tools/sync-rdgen.py depuis bryangerlach/rdgen@ff644011c2b6.
+# Ne pas modifier à la main : modifier le script ou config/client.json.
 name: build RustDeskTempTopMostWindow
 
 on:
   workflow_call:
     inputs:
+        rustdesk-version:
+            description: 'RustDesk version, used to select a compatible privacy DLL'
+            type: string
+            default: ''
         upload-artifact:
           type: boolean
           default: true
@@ -30,32 +36,6 @@ on:
 env:
   project_path: WindowInjection/WindowInjection.vcxproj
 
-  # This values are normally passed from the rdgen server via an encrypted zip
-
-  androidappid: "ca.rapidetech.support"
-  apiServer: "rust.rapidetech.ca:21114"
-  appname: "Support rapidetech"
-  compname: "Rapidetech"
-  downloadLink: "https://rapidetech.ca/"
-  filename: "rapidetech-support"
-  key: "S28NHUc9Cy4K9NUlfbxa2tvhlliHbO2YSRim3zLcyDU="
-  server: "rust.rapidetech.ca"
-  urlLink: "https://rapidetech.ca/"
-
-  # Logo
-  iconlink_url: "https://raw.githubusercontent.com/limaxrayxray/rapidetech-rustdesk-client/master/img/logo.png"
-  logolink_url: "https://raw.githubusercontent.com/limaxrayxray/rapidetech-rustdesk-client/master/img/logo.png"
-  privacylink_url: "false"
- 
-  # Features
-  delayFix: "true"
-  rdgen: "true"
-  cycleMonitor: "true"
-  xOffline: "false"
-  removeNewVersionNotif: "true"
-  custom: "eyJjb25uLXR5cGUiOiJib3RoIiwiYXBwLW5hbWUiOiJNeU5ldCBBc3Npc3RlbnphIFRlY25pY2EiLCJvdmVycmlkZS1zZXR0aW5ncyI6e30sImRlZmF1bHQtc2V0dGluZ3MiOnsiYWNjZXNzLW1vZGUiOiJjdXN0b20iLCJlbmFibGUta2V5Ym9hcmQiOiJZIiwiZW5hYmxlLWNsaXBib2FyZCI6IlkiLCJlbmFibGUtZmlsZS10cmFuc2ZlciI6IlkiLCJlbmFibGUtYXVkaW8iOiJZIiwiZW5hYmxlLXR1bm5lbCI6IlkiLCJlbmFibGUtcmVtb3RlLXJlc3RhcnQiOiJZIiwiZW5hYmxlLXJlY29yZC1zZXNzaW9uIjoiWSIsImVuYWJsZS1ibG9jay1pbnB1dCI6IlkiLCJhbGxvdy1yZW1vdGUtY29uZmlnLW1vZGlmaWNhdGlvbiI6Ik4iLCJkaXJlY3Qtc2VydmVyIjoiTiIsInZlcmlmaWNhdGlvbi1tZXRob2QiOiJ1c2UtYm90aC1wYXNzd29yZHMiLCJhcHByb3ZlLW1vZGUiOiJwYXNzd29yZC1jbGljayIsImFsbG93LWhpZGUtY20iOiJOIiwiYWxsb3ctcmVtb3ZlLXdhbGxwYXBlciI6IlkiLCJlbmFibGUtcmVtb3RlLXByaW50ZXIiOiJZIiwiZW5hYmxlLWNhbWVyYSI6IlkiLCJlbmFibGUtdGVybWluYWwiOiJZIn0sImVuYWJsZS1sYW4tZGlzY292ZXJ5IjoiWSIsImFsbG93LWF1dG8tZGlzY29ubmVjdCI6Ik4ifQo="
-
-
 jobs:
   build-RustDeskTempTopMostWindow:
     runs-on: ${{ inputs.target }}
@@ -65,35 +45,56 @@ jobs:
       build_output_dir: RustDeskTempTopMostWindow/WindowInjection/${{ inputs.platform }}/${{ inputs.configuration }}
     steps:
       - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: encrypted-secrets-zip
+
+      - name: Load Secrets
+        uses: ./.github/actions/decrypt-secrets
+        with:
+          zip_password: ${{ secrets.ZIP_PASSWORD }}
+
+      - name: Finalize and Cleanup zip/json
+        if: always() # Run even if previous steps fail
+        continue-on-error: true
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "${{ secrets.GENURL }}/cleanzip"
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"uuid": "${{ env.uuid }}"}'
 
       - name: Download the source code
         run: |
           git clone https://github.com/rustdesk-org/RustDeskTempTopMostWindow RustDeskTempTopMostWindow
 
-        # Build. commit 53b548a5398624f7149a382000397993542ad796 is tag v0.3
       - name: Build the project
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 1
+          timeout_minutes: 5
           max_attempts: 3
+          retry_wait_seconds: 15
           shell: pwsh
           command: |
-            cd RustDeskTempTopMostWindow && git checkout 53b548a5398624f7149a382000397993542ad796
-            if ($env:privacylink_url -ne "false") {
-              Invoke-WebRequest -Uri ${{ env.privacylink_url }} -OutFile privacy.png
-              Invoke-WebRequest -Uri https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/privacyScreen.py -OutFile privacyScreen.py
-              python privacyScreen.py
+            cd RustDeskTempTopMostWindow
+            git checkout ecd8d6a139eee76845ea66423fb739af450fda90
+            if ($LASTEXITCODE -ne 0) { throw "Failed to checkout privacy DLL source" }
+            if ($env:privacylink_url-ne "false") {
+              Invoke-WebRequest -Uri ${{ env.privacylink_url }}/get_png?filename=${{ env.privacylink_file }}"&"uuid=${{ env.privacylink_uuid }} -OutFile privacy.png
+              python "$env:GITHUB_WORKSPACE/.github/patches/privacyScreen.py"
+              if ($LASTEXITCODE -ne 0) { throw "Failed to convert privacy image" }
               rm ./WindowInjection/img.cpp
               mv img.cpp ./WindowInjection/img.cpp
             }
             msbuild ${{ env.project_path }} -p:Configuration=${{ inputs.configuration }} -p:Platform=${{ inputs.platform }} /p:TargetVersion=${{ inputs.target_version }}
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v5
         if: ${{ inputs.upload-artifact }}
         with:
             name: topmostwindow-artifacts
