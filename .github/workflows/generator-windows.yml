@@ -540,7 +540,7 @@ jobs:
         shell: bash
         run: | 
           sed -i -e 's|updateUrl.isNotEmpty|false|' ./flutter/lib/desktop/pages/desktop_home_page.dart
-          sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs
+          perl -0777 -i.bak -pe 's/(pub async fn do_check_software_update\(\) -> hbb_common::ResultType<\(\)> \{\r?\n)/$1    return Ok(());\n/' ./src/common.rs
 
       # - name: run as admin
       #   continue-on-error: true

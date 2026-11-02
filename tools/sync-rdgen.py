@@ -270,6 +270,17 @@ def transform(name, text, sha):
     if "get_png" in text:
         die(f"{name} : un get_png n'a pas été réécrit")
 
+    # removeNewVersionNotif : le sed de rdgen supprime de « let (request, url) = »
+    # au prochain « Ok(()) ». Sur 1.4.x et 1.5.0, c'était la fin de
+    # do_check_software_update. Sur 1.5.1, le prochain Ok(()) est 1 100 lignes
+    # plus bas, et le code ne compile plus. On neutralise plutôt la fonction en
+    # tête, avec perl, présent sur les 3 OS (le sed BSD de macOS échouait).
+    text, n = text.replace(
+        "sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs",
+        "perl -0777 -i.bak -pe 's/(pub async fn do_check_software_update\\(\\) -> hbb_common::ResultType<\\(\\)> \\{\\r?\\n)/$1    return Ok(());\\n/' ./src/common.rs"
+    ), text.count("sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs")
+    expect(n, "sed removeNewVersionNotif sur common.rs", name)
+
     # zip_url facultatif, entrée patch pour le tag de release.
     text, n = re.subn(r"(\n      zip_url:\n        description: [^\n]*\n        required: )true",
                       r"\1false", text)
