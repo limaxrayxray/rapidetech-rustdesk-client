@@ -321,8 +321,45 @@ def transform(name, text, sha):
     return "\n".join(lines)
 
 
+_pins = {}
+
+
+def pin_actions(text, name):
+    """Remplace chaque « uses: owner/repo@étiquette » par le SHA du commit.
+
+    Une étiquette (v3, master…) peut être déplacée vers du code malveillant :
+    c'est arrivé à tj-actions/changed-files en 2025. Or ces workflows
+    produisent un outil de prise de contrôle à distance installé chez des
+    clients. Le SHA est recalculé à chaque synchronisation, et l'étiquette
+    reste en commentaire, ce qui rend les changements visibles dans git diff.
+    """
+    def resolve(repo, ref):
+        if (repo, ref) not in _pins:
+            out = subprocess.run(
+                ["git", "ls-remote", f"https://github.com/{repo}",
+                 f"refs/tags/{ref}", f"refs/tags/{ref}^{{}}", f"refs/heads/{ref}"],
+                check=True, capture_output=True, text=True).stdout
+            refs = dict(reversed(l.split("\t")) for l in out.splitlines())
+            sha = (refs.get(f"refs/tags/{ref}^{{}}") or refs.get(f"refs/tags/{ref}")
+                   or refs.get(f"refs/heads/{ref}"))
+            if not sha:
+                die(f"{name} : {repo}@{ref} introuvable")
+            _pins[(repo, ref)] = sha
+        return _pins[(repo, ref)]
+
+    def sub(m):
+        lead, action, ref, rest = m.groups()
+        if re.fullmatch(r"[0-9a-f]{40}", ref):
+            return m.group(0)
+        repo = "/".join(action.split("/")[:2])
+        return f"{lead}{action}@{resolve(repo, ref)} # {ref}{rest}"
+
+    return re.sub(r"^(\s*-?\s*uses:\s*)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@([^\s#]+)(.*)$",
+                  sub, text, flags=re.M)
+
+
 def header(sha, generated):
-    what = "Généré" if generated else "Copié tel quel"
+    what = "Généré" if generated else "Copié (actions figées)"
     return (f"# {what} par tools/sync-rdgen.py depuis {RDGEN}@{sha[:12]}.\n"
             f"# Ne pas modifier à la main : modifier le script ou config/client.json.\n")
 
@@ -339,10 +376,14 @@ def main():
     WF.mkdir(parents=True, exist_ok=True)
     for name in GENERATORS:
         out = header(sha, True) + transform(name, fetch(sha, f".github/workflows/{name}"), sha)
-        (WF / name).write_text(out, encoding="utf-8")
+        (WF / name).write_text(pin_actions(out, name), encoding="utf-8")
     for name in VERBATIM:
-        (WF / name).write_text(header(sha, False) + fetch(sha, f".github/workflows/{name}"),
-                               encoding="utf-8")
+        out = header(sha, False) + fetch(sha, f".github/workflows/{name}")
+        (WF / name).write_text(pin_actions(out, name), encoding="utf-8")
+    # Les fichiers propres au dépôt ne sont touchés que pour figer leurs actions.
+    for name in OWN:
+        f = WF / name
+        f.write_text(pin_actions(f.read_text(encoding="utf-8"), name), encoding="utf-8")
     (ROOT / ".github" / "rdgen-env.json").write_text(
         json.dumps(env, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (ROOT / ".github" / "rdgen-ref").write_text(sha + "\n", encoding="utf-8")

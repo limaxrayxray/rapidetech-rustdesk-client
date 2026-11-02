@@ -1,4 +1,4 @@
-# Copié tel quel par tools/sync-rdgen.py depuis bryangerlach/rdgen@ff644011c2b6.
+# Copié (actions figées) par tools/sync-rdgen.py depuis bryangerlach/rdgen@ff644011c2b6.
 # Ne pas modifier à la main : modifier le script ou config/client.json.
 name: Clear cache
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clear cache
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             console.log("About to clear")
@@ -32,7 +32,7 @@ jobs:
             console.log("Clear completed")
             
       - name: Purge cache # Above seems not clear thouroughly, so add this to double clear
-        uses: MyAlbum/purge-cache@v2
+        uses: MyAlbum/purge-cache@881eb5957687193fa612bf74c0042adc78ea5e54 # v2
         with:
           accessed: true # Purge caches by their last accessed time (default)
           created: false # Purge caches by their created time (default)
