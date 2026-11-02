@@ -534,7 +534,7 @@ jobs:
           perl -0777 -i.bak -pe 's/(pub async fn do_check_software_update\(\) -> hbb_common::ResultType<\(\)> \{\r?\n)/$1    return Ok(());\n/' ./src/common.rs
 
       - name: Restore bridge files
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: bridge-artifact
           path: ./

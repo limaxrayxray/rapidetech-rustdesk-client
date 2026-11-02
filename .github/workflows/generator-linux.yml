@@ -201,7 +201,7 @@ jobs:
 
       - name: Restore bridge files
         if: matrix.job.arch == 'x86_64' || env.UPLOAD_ARTIFACT == 'true'
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: bridge-artifact
           path: ./
@@ -466,7 +466,7 @@ jobs:
 
       - name: Restore bridge files
         if: matrix.job.arch == 'x86_64' || env.UPLOAD_ARTIFACT == 'true'
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: bridge-artifact
           path: ./
@@ -801,7 +801,7 @@ jobs:
             curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ env.token }}" -F "file=@./output/${{ env.filename }}-${{ matrix.job.arch }}.pkg.tar.zst" ${{ env.apiServer }}/api/save_custom_client || true
 
       - name: Upload deb
-        uses: actions/upload-artifact@0c366cb4fc8897159c94880f94b55bc716ad6a66 # master
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # master
         if: env.UPLOAD_ARTIFACT == 'true'
         with:
           name: ${{ env.filename }}-${{ matrix.job.arch }}.deb
@@ -917,7 +917,7 @@ jobs:
           sed -i "s/\[\"cdylib\", \"staticlib\", \"rlib\"\]/\[\"cdylib\"\]/g" Cargo.toml
 
       - name: Restore bridge files
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: bridge-artifact
           path: ./
@@ -1182,7 +1182,7 @@ jobs:
           perl -0777 -i.bak -pe 's/(pub async fn do_check_software_update\(\) -> hbb_common::ResultType<\(\)> \{\r?\n)/$1    return Ok(());\n/' ./src/common.rs
 
       - name: Restore bridge files
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: bridge-artifact
           path: ./
@@ -1400,7 +1400,7 @@ jobs:
             curl -i -X POST -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${{ env.token }}" -F "file=@./output/${{ env.filename }}-unattended-wayland-x86_64.deb" ${{ env.apiServer }}/api/save_custom_client
 
       - name: Upload deb
-        uses: actions/upload-artifact@0c366cb4fc8897159c94880f94b55bc716ad6a66 # master
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # master
         if: ${{ env.UPLOAD_ARTIFACT == 'true' && env.DRM_SUPPORTED == 'true' }}
         with:
           name: ${{ env.filename }}-unattended-wayland-x86_64.deb
@@ -1465,7 +1465,7 @@ jobs:
             --ed25519-public-key "${{ env.update_public_key }}"
 
       - name: Download Binary
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: ${{ env.filename }}-${{ matrix.job.arch }}.deb
           path: .
@@ -1654,7 +1654,7 @@ jobs:
             --ed25519-public-key "${{ env.update_public_key }}"
 
       - name: Download Binary
-        uses: actions/download-artifact@2a5974104b6d5dbdb2f9468a3e54da3bdd241578 # master
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # master
         with:
           name: ${{ env.filename }}-${{ matrix.job.arch }}.deb
           path: .

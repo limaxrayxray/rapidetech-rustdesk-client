@@ -336,12 +336,17 @@ def pin_actions(text, name):
     def resolve(repo, ref):
         if (repo, ref) not in _pins:
             out = subprocess.run(
-                ["git", "ls-remote", f"https://github.com/{repo}",
+                ["git", "ls-remote", f"https://github.com/{repo}", "HEAD",
                  f"refs/tags/{ref}", f"refs/tags/{ref}^{{}}", f"refs/heads/{ref}"],
                 check=True, capture_output=True, text=True).stdout
             refs = dict(reversed(l.split("\t")) for l in out.splitlines())
+            # GitHub résout @master et @main vers la branche par défaut, même
+            # quand une vieille branche du même nom existe encore. C'est le cas
+            # d'actions/upload-artifact, dont « master » est restée en v3,
+            # refusée par GitHub (échec des builds 1.5.1-2).
+            default = refs.get("HEAD") if ref in ("master", "main") else None
             sha = (refs.get(f"refs/tags/{ref}^{{}}") or refs.get(f"refs/tags/{ref}")
-                   or refs.get(f"refs/heads/{ref}"))
+                   or default or refs.get(f"refs/heads/{ref}"))
             if not sha:
                 die(f"{name} : {repo}@{ref} introuvable")
             _pins[(repo, ref)] = sha
