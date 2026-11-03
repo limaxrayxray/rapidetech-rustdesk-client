@@ -1710,7 +1710,7 @@ jobs:
               # The manifest's other source is the metainfo file. Those same seds rewrote
               # the REFERENCE to it without renaming the file on disk, so only the name
               # is left to fix; its contents are already rewritten.
-              FLAT="$(echo "${{ env.appname }}" | tr -d ' ')"
+              FLAT="$(echo "${{ env.appname }}" | tr -d ' -')"
               BUNDLE_ID="com.${FLAT}.${FLAT}"
               sed -ie "s|\"id\": \"com[^\"]*\"|\"id\": \"${BUNDLE_ID}\"|" flatpak/rustdesk.json
               sed -ie "s|\"path\": \"com[^\"]*\.metainfo\.xml\"|\"path\": \"${BUNDLE_ID}.metainfo.xml\"|" flatpak/rustdesk.json

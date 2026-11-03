@@ -309,6 +309,14 @@ def transform(name, text, sha):
             expect(text.count(label), f"sed {label} sur AndroidManifest.xml", name, exact=1)
             text = text.replace(label, label.replace("env.appname", "env.appname_display"))
 
+    # Flatpak : rdgen tire l'identifiant du nom sans espaces
+    # (com.<nom>.<nom>). Flatpak refuse un tiret ailleurs que dans le dernier
+    # segment : on retire aussi les tirets.
+    old_flat = '''FLAT="$(echo "${{ env.appname }}" | tr -d ' ')"'''
+    if name == "generator-linux.yml":
+        expect(text.count(old_flat), "identifiant Flatpak (FLAT=)", name, exact=1)
+        text = text.replace(old_flat, old_flat.replace("tr -d ' '", "tr -d ' -'"))
+
     # Linux : variante « unattended-wayland » (libdrmtap, ajoutée par rdgen le
     # 2026-10-31). Son empaquetage cherche tmpdeb/usr/bin/<appname> et échoue
     # avec un nom personnalisé. Aucun job n'en dépend : désactivée sauf si
