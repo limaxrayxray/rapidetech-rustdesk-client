@@ -1,7 +1,7 @@
-# Support rapidetech — client RustDesk personnalisé
+# Rapidetech-Support — client RustDesk personnalisé
 
-Build du client [RustDesk](https://github.com/rustdesk/rustdesk) « Support
-rapidetech », préconfiguré pour le serveur `rust.rapidetech.ca`, sur GitHub
+Build du client [RustDesk](https://github.com/rustdesk/rustdesk)
+`Rapidetech-Support`, préconfiguré pour le serveur `rust.rapidetech.ca`, sur GitHub
 Actions et sans serveur [rdgen](https://github.com/bryangerlach/rdgen).
 
 ## Principe
@@ -44,11 +44,12 @@ réglé sur les serveurs publics de RustDesk.
   (le paquet de la classe `R`), puis le remplace en même temps que
   `applicationId`. Le code Kotlin ne trouve plus `R` et l'APK ne compile pas.
   Le script ne change que `applicationId` (`ca.rapidetech.support`).
-- **Libellé Android** : rdgen met le nom interne (`Supportrapidetech`) dans
-  les `android:label` du manifeste, affichés sous l'icône et dans les
-  réglages d'accessibilité. Le script y met le nom affiché
+- **Libellé Android** : rdgen met le nom interne (sans espaces) dans les
+  `android:label` du manifeste, affichés sous l'icône et dans les réglages
+  d'accessibilité. Le script y met le nom de `config/client.json` tel quel
   (`appname_display` dans `rdgen-env.json`). Ce nom est donc limité aux
-  lettres, chiffres, espaces, `.`, `_` et `-`.
+  lettres, chiffres, espaces, `.`, `_` et `-`. Sans espace dans le nom, les
+  deux sont identiques.
 - **`custom_.txt` du .deb** : RustDesk lit ce fichier (nom,
   permissions par défaut) dans le dossier de son exécutable,
   `/usr/share/<appname>/`. rdgen le dépose dans `/usr/share/rustdesk/` et ne
@@ -59,7 +60,11 @@ réglé sur les serveurs publics de RustDesk.
   RustDesk en fait son nom à l'exécution (dossiers, service, registre), et la
   1.5.1 refuse d'installer un nom qui contient autre chose que des lettres,
   des chiffres, `-` et `_` (« Application name must start with… », sous
-  Windows et macOS). Le script y met le nom interne, `Supportrapidetech`.
+  Windows et macOS). Le script y met le nom interne, sans espaces.
+- **Identifiant Flatpak** : rdgen le tire du nom sans espaces
+  (`com.<nom>.<nom>`). Flatpak refuse un tiret ailleurs que dans le dernier
+  segment : le script retire aussi les tirets
+  (`com.RapidetechSupport.RapidetechSupport`).
 - **Linux unattended-wayland** (`libdrmtap`, ajouté par rdgen le
   2026-10-31) : son empaquetage échoue avec un nom d'application
   personnalisé. Le job est désactivé (`if: false`), sauf si
@@ -111,10 +116,12 @@ attendus par les workflows rdgen.
 
 ## Note sur le nom
 
-Comme dans rdgen, le nom interne (`appname`) est le nom de
-`config/client.json` sans les espaces : `Supportrapidetech`. C'est le nom des
-fenêtres, des dossiers, du service et du programme installé. Le nom avec
-espace, « Support rapidetech », ne sert plus qu'au libellé Android (voir plus
-haut). Pour un nom lisible partout, choisir un nom sans espace, par exemple
-`Rapidetech-Support` : le tiret est accepté, sauf en première position sur
-macOS.
+Le client s'appelle `Rapidetech-Support` (`appname` de `config/client.json`).
+C'est le nom des fenêtres, des dossiers, du service et du programme installé.
+Il ne doit pas contenir d'espace : RustDesk 1.5.1 refuserait de s'installer
+(voir « Nom dans `custom_.txt` »). Le tiret est accepté, sauf en première
+position sur macOS. Les fichiers téléchargés gardent le nom `exename`,
+`rapidetech-support`.
+
+Jusqu'à `1.5.1-7`, le client s'appelait « Support rapidetech », réduit à
+`Supportrapidetech` à l'intérieur.

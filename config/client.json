@@ -1,7 +1,7 @@
 {
   "_comment": "Configuration du client « Support rapidetech ». Les noms de champs sont ceux du formulaire rdgen (rdgenerator/views.py). Après modification : tools/sync-rdgen.py, puis commit et tag.",
 
-  "appname": "Support rapidetech",
+  "appname": "Rapidetech-Support",
   "exename": "rapidetech-support",
   "compname": "Rapidetech",
   "androidappid": "ca.rapidetech.support",
