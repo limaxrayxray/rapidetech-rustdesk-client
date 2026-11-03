@@ -94,7 +94,13 @@ Le tag `<version RustDesk>-<patch>` crée une pré-release, puis lance les
 générateurs Windows, macOS, Android et Linux, qui y déposent leurs binaires.
 Pour rebâtir la même version (config modifiée, build raté), on incrémente le
 patch : `1.5.1-2`. Le workflow `Release` se relance aussi à la main sur un
-tag existant, en choisissant les plateformes.
+tag existant, en choisissant les plateformes (`platforms` : `macos`, par
+exemple). Il ne modifie pas une release qui existe déjà, même publiée.
+
+Pour un build raté ou bloqué, ne pas utiliser « Re-run failed jobs » : le job
+`cleanup` de rdgen supprime l'artefact de configuration
+(`encrypted-secrets-zip`) à la fin de la première exécution, et le job relancé
+échoue. Relancer plutôt le workflow `Release` pour cette seule plateforme.
 
 Une fois les binaires testés, on passe la pré-release en release. Les liens
 `https://github.com/limaxrayxray/rapidetech-rustdesk-client/releases/latest/download/<fichier>`
