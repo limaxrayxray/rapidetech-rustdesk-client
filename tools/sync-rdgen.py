@@ -85,6 +85,9 @@ def build_env(cfg):
     filename = re.sub(r"[^\w\s-]", "_", filename).strip().replace(" ", "_")
     if not (appname.isascii() and filename.isascii()):
         die("appname et exename doivent être en ASCII")
+    # Inséré tel quel dans un sed et dans AndroidManifest.xml.
+    if not re.fullmatch(r"[A-Za-z0-9 ._-]+", appname_display):
+        die("appname : lettres, chiffres, espaces, « . », « _ » et « - » seulement")
     remove_notif = cfg.get("removeNewVersionNotif", False)
     if cfg.get("update_public_key"):
         remove_notif = False
@@ -164,6 +167,8 @@ def build_env(cfg):
         "logolink_url": image("logo"), "logolink_uuid": "", "logolink_file": "",
         "privacylink_url": image("privacy"), "privacylink_uuid": "", "privacylink_file": "",
         "appname": appname,
+        # Propre à ce dépôt : libellé Android (voir transform).
+        "appname_display": appname_display,
         "genurl": "",
         "urlLink": cfg.get("urlLink") or "https://rustdesk.com",
         "downloadLink": cfg.get("downloadLink") or "https://rustdesk.com/download",
@@ -290,6 +295,15 @@ def transform(name, text, sha):
     if name == "generator-android.yml":
         expect(text.count(old_appid), "sed androidappid sur build.gradle", name, exact=1)
         text = text.replace(old_appid, "sed -i -e 's|applicationId \"com.carriez.flutter_hbb\"|applicationId \"${{ env.androidappid }}\"|' ./flutter/android/app/build.gradle")
+
+    # Android : rdgen met le nom interne, sans espaces (« Supportrapidetech »),
+    # dans les libellés du manifeste : sous l'icône et dans les réglages
+    # d'accessibilité. Le libellé ne sert qu'à l'affichage : on y met le nom
+    # affiché. Le reste (chaînes Kotlin, config.rs) garde le nom interne.
+    if name == "generator-android.yml":
+        for label in ['android:label="${{ env.appname }}"', 'android:label="${{ env.appname }} Input"']:
+            expect(text.count(label), f"sed {label} sur AndroidManifest.xml", name, exact=1)
+            text = text.replace(label, label.replace("env.appname", "env.appname_display"))
 
     # Linux : variante « unattended-wayland » (libdrmtap, ajoutée par rdgen le
     # 2026-10-31). Son empaquetage cherche tmpdeb/usr/bin/<appname> et échoue

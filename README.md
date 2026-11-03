@@ -44,6 +44,11 @@ réglé sur les serveurs publics de RustDesk.
   (le paquet de la classe `R`), puis le remplace en même temps que
   `applicationId`. Le code Kotlin ne trouve plus `R` et l'APK ne compile pas.
   Le script ne change que `applicationId` (`ca.rapidetech.support`).
+- **Libellé Android** : rdgen met le nom interne (`Supportrapidetech`) dans
+  les `android:label` du manifeste, affichés sous l'icône et dans les
+  réglages d'accessibilité. Le script y met le nom affiché
+  (`appname_display` dans `rdgen-env.json`). Ce nom est donc limité aux
+  lettres, chiffres, espaces, `.`, `_` et `-`.
 - **`custom_.txt` du .deb** : RustDesk lit ce fichier (nom affiché,
   permissions par défaut) dans le dossier de son exécutable,
   `/usr/share/<appname>/`. rdgen le dépose dans `/usr/share/rustdesk/` et ne
