@@ -249,12 +249,14 @@ def release_steps(upload_block):
             out.append(f'          [ -f "{path}" ] || echo "::warning::{path} absent (facultatif)"')
         else:
             out.append(f'          [ -f "{path}" ] || {{ echo "::error::{path} absent"; exit 1; }}')
+    # Pas de « prerelease: true » : release.yml crée déjà la pré-release, et
+    # softprops l'appliquerait aussi à une release existante. Un générateur
+    # relancé après publication la repasserait en pré-release.
     out += ["",
             "      - name: Publier dans la release GitHub (rapidetech)",
             "        uses: softprops/action-gh-release@v3",
             "        with:",
             "          tag_name: ${{ inputs.version }}-${{ inputs.patch }}",
-            "          prerelease: true",
             "          files: |"]
     out += ["            " + p.replace("$GITHUB_WORKSPACE/", "./") for p, _ in files]
     return out
