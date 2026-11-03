@@ -49,12 +49,17 @@ réglé sur les serveurs publics de RustDesk.
   réglages d'accessibilité. Le script y met le nom affiché
   (`appname_display` dans `rdgen-env.json`). Ce nom est donc limité aux
   lettres, chiffres, espaces, `.`, `_` et `-`.
-- **`custom_.txt` du .deb** : RustDesk lit ce fichier (nom affiché,
+- **`custom_.txt` du .deb** : RustDesk lit ce fichier (nom,
   permissions par défaut) dans le dossier de son exécutable,
   `/usr/share/<appname>/`. rdgen le dépose dans `/usr/share/rustdesk/` et ne
   le copie à côté de l'exécutable que pour rpm, AppImage et flatpak. Le
   script l'ajoute au .deb après sa création (`dpkg-deb -R` / `-b`). Le
   serveur et la clé, compilés dans le binaire, n'en dépendent pas.
+- **Nom dans `custom_.txt`** : rdgen y met le nom affiché, avec ses espaces.
+  RustDesk en fait son nom à l'exécution (dossiers, service, registre), et la
+  1.5.1 refuse d'installer un nom qui contient autre chose que des lettres,
+  des chiffres, `-` et `_` (« Application name must start with… », sous
+  Windows et macOS). Le script y met le nom interne, `Supportrapidetech`.
 - **Linux unattended-wayland** (`libdrmtap`, ajouté par rdgen le
   2026-10-31) : son empaquetage échoue avec un nom d'application
   personnalisé. Le job est désactivé (`if: false`), sauf si
@@ -106,7 +111,10 @@ attendus par les workflows rdgen.
 
 ## Note sur le nom
 
-Comme dans rdgen, le nom interne (`appname`) est le nom affiché sans les
-espaces : `Supportrapidetech`. Le nom affiché, « Support rapidetech », passe
-par `custom.txt`. Le dépôt d'origine utilisait le nom avec espace et devait
-corriger à part les clés de registre Windows qui en souffraient.
+Comme dans rdgen, le nom interne (`appname`) est le nom de
+`config/client.json` sans les espaces : `Supportrapidetech`. C'est le nom des
+fenêtres, des dossiers, du service et du programme installé. Le nom avec
+espace, « Support rapidetech », ne sert plus qu'au libellé Android (voir plus
+haut). Pour un nom lisible partout, choisir un nom sans espace, par exemple
+`Rapidetech-Support` : le tiret est accepté, sauf en première position sur
+macOS.

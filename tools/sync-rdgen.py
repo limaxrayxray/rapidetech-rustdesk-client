@@ -101,8 +101,12 @@ def build_env(cfg):
         custom["disable-installation"] = "Y"
     if cfg.get("settings") == "settingsN":
         custom["disable-settings"] = "Y"
+    # rdgen passe ici le nom affiché, avec ses espaces. RustDesk en fait son
+    # nom à l'exécution (dossiers, service, registre), et la 1.5.1 refuse
+    # d'installer un nom qui n'est pas [A-Za-z0-9_-] (validate_install_app_name,
+    # Windows et macOS). On passe le nom interne, celui du binaire compilé.
     if appname:
-        custom["app-name"] = appname_display
+        custom["app-name"] = appname
     custom["override-settings"] = {}
     custom["default-settings"] = {}
     if cfg.get("permanentPassword"):
